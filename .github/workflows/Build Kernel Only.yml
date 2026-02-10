@@ -25,7 +25,7 @@ on:
           - "Off"
         default: "Off"
       adios:
-        description: '⚡ 是否启用ADIOS IO调度器支持(提升IO读写性能)'
+        description: '🔧 是否启用ADIOS IO调度器支持(提升IO读写性能)'
         required: true
         type: choice
         options:
