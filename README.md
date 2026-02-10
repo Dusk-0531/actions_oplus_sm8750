@@ -2,7 +2,7 @@
 <div id="toc" align="center" style="margin-bottom: 0; padding-bottom: 0;">
   <ul style="list-style: none; margin: 0; padding: 0;">
     <summary>
-      <h1 align="center" style="margin: 0; padding: 0;">⋆. 𐙚˚࿔ chenhua13 的 OnePlus 内核 𝜗𝜚˚⋆</h1>
+      <h1 align="center" style="margin: 0; padding: 0;">⋆. 𐙚˚࿔ chenhua13 一加内核 𝜗𝜚˚⋆</h1>
       <p align="center" style="font-size:12px; margin-top: 5px; margin-bottom: 20px;">
   <a href="https://github.com/mrcxlinux/actions_oplus_sm8750/tree/english">English Version</a> | 
   <a href="https://github.com/mrcxlinux/actions_oplus_sm8750/tree/zh">中文版本</a>
