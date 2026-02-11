@@ -19,7 +19,7 @@
 
 ➜ **内核版本**: `6.6`
 
-➜ **Android 版本**: `15 VanillaIceCream (can be used on later versions too!)`
+➜ **Android 版本**: `15 VanillaIceCream （也可以在更高版本上使用！）`
 
 ➜ 可用于: `OxygenOS / ColorOS`
 
