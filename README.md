@@ -30,6 +30,8 @@
 
 ➜ **ccache**（首次构建后，后续构建将快得多！）
 
+➜ **fengchi** 支持
+
 ➜ **mountify** 支持
 
 ➜ 基带守护（Baseband Guard）
