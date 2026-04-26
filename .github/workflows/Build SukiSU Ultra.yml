@@ -887,7 +887,7 @@ jobs:
           df -h
 
       - name: 📦 Save New CCache
-        if: always()
+        if: success()
         uses: actions/cache/save@v4
         with:
           path: ${{ env.CCACHE_DIR }}
@@ -983,36 +983,46 @@ jobs:
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: |
           DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
-          COMMIT_MSG="Workflow Dispatch: 6.6.127"
           COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
           REPO_URL="https://github.com/${{ github.repository }}"
+          RUN_URL="$REPO_URL/actions/runs/${{ github.run_id }}"
+          TIME_NOW="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
 
-          # ── Telegra.ph ────────────────────────────────────────────────────
-          TELEGRAPH_URL=""
-          if [ "$BUILD_STATUS" = "success" ]; then
-            export TG_KERNEL_VERSION="6.6.127"
-            export TG_KSU_DISPLAY="$KSU_DISPLAY"
-            export TG_KSUVER="$KSUVER"
-            export TG_SUFFIX="$SUFFIX"
-            export TG_LTO="$LTO"
-            export TG_BUILD_NUM="$BUILD_NUM"
-            export TG_TIME_NOW="$TIME_NOW"
-            export TG_RUN_URL="$RUN_URL"
-            export TG_REPO="$REPO"
-            export TG_SUSFS="$SUSFS" TG_KPM="$KPM" TG_BBR="$BBR"
-            export TG_ADIOS="$ADIOS" TG_BBG="$BBG" TG_LZ4="$LZ4"
-            export TG_LZ4KD="$LZ4KD" TG_MM="true" TG_FENGCHI="$FENGCHI" TG_HMBIRD="$HMBIRD"
-            export TG_UFIX="$UFIX" TG_ZWB="$ZWB"
-            export TG_SCHED="$SCHED" TG_CLANG="$CLANG"
-            export TG_CPU_OPT="$CPU_OPT" TG_F2FS="$F2FS" TG_WG="$WG"
-            export TG_LRNG="$LRNG" TG_WLB="$WLB"
-            export TG_NTSYNC="${{ github.event.inputs.ntsync_enable }}"
-            export TG_DROIDSPACES="${{ github.event.inputs.droidspaces_enable }}"
-            export TG_IP_SET="${{ github.event.inputs.ip_set_enable }}"
-            export TG_TTL="${{ github.event.inputs.ttl_enable }}"
-            export TG_MEM_OPT="${{ github.event.inputs.mem_opt_patches }}"
+          export TG_KERNEL_VERSION="6.6.127"
+          export TG_KSU_DISPLAY="SukiSU Ultra"
+          export TG_KSUVER="${{ env.KSUVER }}"
+          export TG_SUFFIX="palaziks-ShiftPorts"
+          export TG_LTO="${{ github.event.inputs.lto_type }}"
+          export TG_BUILD_NUM="${{ github.run_number }}"
+          export TG_TIME_NOW="$TIME_NOW"
+          export TG_RUN_URL="$RUN_URL"
+          export TG_REPO="${{ github.repository }}"
+          export TG_SUSFS="${{ github.event.inputs.SUSFS }}"
+          export TG_KPM="${{ github.event.inputs.KPM }}"
+          export TG_BBR="${{ github.event.inputs.bbr_enable }}"
+          export TG_ADIOS="${{ github.event.inputs.adios_enable }}"
+          export TG_BBG="${{ github.event.inputs.baseband_guard }}"
+          export TG_LZ4="${{ github.event.inputs.lz4_enable }}"
+          export TG_LZ4KD="${{ github.event.inputs.lz4kd_enable }}"
+          export TG_MM="true"
+          export TG_FENGCHI="${{ github.event.inputs.fengchi }}"
+          export TG_HMBIRD="false"
+          export TG_UFIX="${{ github.event.inputs.unicode_fix }}"
+          export TG_ZWB="${{ github.event.inputs.zram_writeback }}"
+          export TG_SCHED="${{ github.event.inputs.schedutil_opt }}"
+          export TG_CLANG="ZyCromerZ-19"
+          export TG_CPU_OPT="${{ github.event.inputs.cpu_opt }}"
+          export TG_F2FS="${{ github.event.inputs.f2fs_opt }}"
+          export TG_WG="${{ github.event.inputs.wireguard }}"
+          export TG_LRNG="${{ github.event.inputs.lrng_enable }}"
+          export TG_WLB="${{ github.event.inputs.wakelock_blocker }}"
+          export TG_NTSYNC="${{ github.event.inputs.ntsync_enable }}"
+          export TG_DROIDSPACES="${{ github.event.inputs.droidspaces_enable }}"
+          export TG_IP_SET="${{ github.event.inputs.ip_set_enable }}"
+          export TG_TTL="${{ github.event.inputs.ttl_enable }}"
+          export TG_MEM_OPT="${{ github.event.inputs.mem_opt_patches }}"
 
-            TELEGRAPH_URL=$(python3 << 'PYEOF'
+          TELEGRAPH_URL=$(python3 << 'PYEOF'
           import json, urllib.request, urllib.parse, os
 
           e = os.environ.get
@@ -1022,56 +1032,31 @@ jobs:
               return {"tag": "li", "children": [f"{icon} {name}"]}
 
           content = [
-              {"tag": "h3", "children": [f"OnePlus 13 (PJZ110) — palaziks kernel"]},
+              {"tag": "h3", "children": ["OnePlus 13 (PJZ110) — palaziks kernel"]},
               {"tag": "hr"},
               {"tag": "h4", "children": ["📋 Build Info"]},
               {"tag": "table", "children": [
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Device"]},
-                      {"tag": "td", "children": ["OnePlus 13 PJZ110 (CN) / SM8750"]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Kernel"]},
-                      {"tag": "td", "children": [f"{e('TG_KERNEL_VERSION')}-android15"]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Manager"]},
-                      {"tag": "td", "children": [f"{e('TG_KSU_DISPLAY')} v{e('TG_KSUVER')}"]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Suffix"]},
-                      {"tag": "td", "children": [f"-{e('TG_SUFFIX')}"]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["LTO"]},
-                      {"tag": "td", "children": [e("TG_LTO")]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Clang"]},
-                      {"tag": "td", "children": [e("TG_CLANG")]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Build #"]},
-                      {"tag": "td", "children": [e("TG_BUILD_NUM")]}
-                  ]},
-                  {"tag": "tr", "children": [
-                      {"tag": "td", "children": ["Time"]},
-                      {"tag": "td", "children": [e("TG_TIME_NOW")]}
-                  ]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Device"]}, {"tag": "td", "children": ["OnePlus 13 PJZ110 (CN) / SM8750"]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Kernel"]}, {"tag": "td", "children": [f"{e('TG_KERNEL_VERSION')}-android15"]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Manager"]}, {"tag": "td", "children": [f"{e('TG_KSU_DISPLAY')} v{e('TG_KSUVER')}"]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Suffix"]}, {"tag": "td", "children": [f"-{e('TG_SUFFIX')}"]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["LTO"]}, {"tag": "td", "children": [e("TG_LTO")]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Clang"]}, {"tag": "td", "children": [e("TG_CLANG")]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Build #"]}, {"tag": "td", "children": [e("TG_BUILD_NUM")]}]},
+                  {"tag": "tr", "children": [{"tag": "td", "children": ["Time"]}, {"tag": "td", "children": [e("TG_TIME_NOW")]}]},
               ]},
               {"tag": "hr"},
               {"tag": "h4", "children": ["⚡ Features"]},
               {"tag": "ul", "children": [
                   feat(e("TG_SUSFS"),   "SuSFS"),
-                  feat(e("TG_KPM") != "false" and "true" or "false", f"KPM ({e('TG_KPM')})"),
-                  feat(e("TG_BBR") != "false" and "true" or "false", f"BBR/Brutal ({e('TG_BBR')})"),
+                  feat("true" if e("TG_KPM") != "false" else "false", f"KPM ({e('TG_KPM')})"),
+                  feat("true" if e("TG_BBR") != "false" else "false", f"BBR/Brutal ({e('TG_BBR')})"),
                   feat(e("TG_ADIOS"),   "ADIOS IO Scheduler"),
                   feat(e("TG_BBG"),     "Baseband Guard"),
                   feat(e("TG_LZ4"),     "LZ4 1.10.0 + ZSTD 1.5.7"),
                   feat(e("TG_LZ4KD"),  "LZ4KD ZRAM"),
                   feat(e("TG_MM"),      "Multi-Manager Support"),
                   feat(e("TG_FENGCHI"),"Fengchi Optimization"),
-                  feat(e("TG_HMBIRD"), "HMBIRD SCX Scheduler"),
                   feat(e("TG_UFIX"),    "Unicode Bypass Fix"),
                   feat(e("TG_ZWB"),     "ZRAM Writeback"),
                   feat(e("TG_SCHED"),  "SchedUtil Optimizations"),
@@ -1080,11 +1065,11 @@ jobs:
                   feat(e("TG_WG"),     "WireGuard VPN"),
                   feat(e("TG_LRNG"),   "LRNG v59"),
                   feat(e("TG_WLB"),    "Wakelock Blocker"),
-                  feat(e("TG_NTSYNC"),     "NTSync (NT sync primitives)"),
-                  feat(e("TG_DROIDSPACES"),"Droidspaces (proot-distro support)"),
-                  feat(e("TG_IP_SET"),     "IP_SET + IPv6 NAT"),
-                  feat(e("TG_TTL"),        "TTL/HL Target (hide tethering)"),
-                  feat(e("TG_MEM_OPT"),    "Memory & Scheduler Optimizations"),
+                  feat(e("TG_NTSYNC"),      "NTSync (NT sync primitives)"),
+                  feat(e("TG_DROIDSPACES"), "Droidspaces (proot-distro support)"),
+                  feat(e("TG_IP_SET"),      "IP_SET + IPv6 NAT"),
+                  feat(e("TG_TTL"),         "TTL/HL Target (hide tethering)"),
+                  feat(e("TG_MEM_OPT"),     "Memory & Scheduler Optimizations"),
               ]},
               {"tag": "hr"},
               {"tag": "h4", "children": ["📥 Installation"]},
@@ -1099,7 +1084,7 @@ jobs:
                   "  |  ",
                   {"tag": "a", "attrs": {"href": f"https://github.com/{e('TG_REPO')}"}, "children": [f"📦 {e('TG_REPO')}"]},
               ]},
-              {"tag": "p", "children": [f"Built by @palaziks"]},
+              {"tag": "p", "children": ["Built by @palaziks"]},
           ]
 
           data = {
@@ -1131,7 +1116,6 @@ jobs:
               print("")
           PYEOF
           )
-          fi
 
           CAPTION="✅ <b>SukiSU Ultra Build Successful!</b>
 
@@ -1139,7 +1123,7 @@ jobs:
           📅 <b>Date:</b> $DATE
           📝 <b>Commit:</b> <code>$COMMIT_MSG</code>
           🔢 <b>Hash:</b> <a href=\"$REPO_URL/commit/${{ github.sha }}\">$COMMIT_HASH</a>
-          🔧 <b>Kernel features:</b> <a href=\"$TELEGRAPH_URL\">Read on Telegra.ph</a>"
+          🔧 <b>Kernel features:</b> <a href=\"$TELEGRAPH_URL\">Telegra.ph</a>"
 
           ZIP_PATH=$(ls ${{ github.workspace }}/kernel_workspace/AnyKernel*.zip | head -n 1)
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendDocument" \
