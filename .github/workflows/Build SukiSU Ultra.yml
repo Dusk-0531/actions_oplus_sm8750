@@ -1153,14 +1153,14 @@ jobs:
           PYEOF
           )
 
-          CAPTION="✅ <b>SukiSU Ultra Build Successful!</b>
+          CAPTION="✅ <b>Kernel Build Successful!</b>
 
           📱 <b>Device:</b> <code>OnePlus 13</code>
           ⚡ <b>KSU:</b> <code>SukiSU Ultra/code>
           📅 <b>Date:</b> $DATE
           📝 <b>Commit:</b> <code>$COMMIT_MSG</code>
           🔢 <b>Hash:</b> <a href=\"$REPO_URL/commit/${{ github.sha }}\">$COMMIT_HASH</a>
-          🔧 <b>Kernel features:</b> <a href=\"$TELEGRAPH_URL\">Telegra.ph</a>"
+          🔧 <b>Kernel features:</b> <a href=\"$TELEGRAPH_URL\">click to read</a>"
 
           ZIP_PATH=$(ls ${{ github.workspace }}/kernel_workspace/AnyKernel*.zip | head -n 1)
           curl -s -X POST "https://api.telegram.org/bot$TELEGRAM_TOKEN/sendDocument" \
