@@ -1,7 +1,7 @@
 name: SukiSU Ultra OP13 Build
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}-6.6.127
+  group: ${{ github.workflow }}-${{ github.ref }}-6.6.138
   cancel-in-progress: true
 
 env:
@@ -9,7 +9,7 @@ env:
   ANDROID_VERSION: 'android15'
   KERNEL_VERSION: '6.6'
   KERNEL_NAME: 'android15-8-g29d86c5fc9dd-abogki428889875-4k'
-  CCACHE_KEY: ccache-neov4-6.6.127
+  CCACHE_KEY: ccache-neov4-6.6.138
 
 on:
   workflow_dispatch:
@@ -266,13 +266,13 @@ jobs:
 
       - name: Configure CCache Directory
         run: |
-          echo "CCACHE_DIR=$HOME/.ccache_6.6.127" >> $GITHUB_ENV
-          echo "LDCACHE_DIR=/dev/shm/ldcache_6.6.127" >> $GITHUB_ENV
-          mkdir -p /dev/shm/ldcache_6.6.127
+          echo "CCACHE_DIR=$HOME/.ccache_6.6.138" >> $GITHUB_ENV
+          echo "LDCACHE_DIR=/dev/shm/ldcache_6.6.138" >> $GITHUB_ENV
+          mkdir -p /dev/shm/ldcache_6.6.138
           echo "CCACHE_MAXSIZE=10G" >> $GITHUB_ENV
           echo "Current Disk Space:"
           df -h
-          echo "Current Build Kernel Version: 6.6.127"
+          echo "Current Build Kernel Version: 6.6.138"
 
       - name: Restore CCache
         uses: actions/cache/restore@v4
@@ -306,7 +306,7 @@ jobs:
           
           echo "Cache miss, attempting to pull public ccache..."
           mkdir -p ${{ env.CCACHE_DIR }}
-          FILE_NAME="ccache-6.6.127.tar.zst"
+          FILE_NAME="ccache-6.6.138.tar.zst"
           
           if gh release download -p "$FILE_NAME" -R cctv18/public_ccache; then
             echo "Successfully downloaded $FILE_NAME, extracting..."
@@ -949,13 +949,13 @@ jobs:
 
           # RAM disk for build output (15GB RAM available, safe to use)
           mkdir -p /dev/shm/kout
-          mkdir -p /dev/shm/ldcache_6.6.127
+          mkdir -p /dev/shm/ldcache_6.6.138
 
           cd kernel_workspace/common
 
           # LTO thin cache wrapper pointing to RAM disk
           echo '#!/bin/bash' > ld-wrapper
-          echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.127 --thinlto-jobs=$(($(nproc --all) / 2))' >> ld-wrapper
+          echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.138 --thinlto-jobs=$(($(nproc --all) / 2))' >> ld-wrapper
           chmod +x ld-wrapper
 
           wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/lib/libfakestat.so || true
@@ -1091,7 +1091,7 @@ jobs:
         run: |
           DATE=$(date +"%Y-%m-%d %H:%M:%S %Z")
           COMMIT_HASH=$(echo "${{ github.sha }}" | cut -c1-8)
-          COMMIT_MSG="Workflow Dispatch: 6.6.127"
+          COMMIT_MSG="Workflow Dispatch: 6.6.138"
           REPO_URL="https://github.com/${{ github.repository }}"
           RUN_URL="$REPO_URL/actions/runs/${{ github.run_id }}"
           TIME_NOW="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
@@ -1287,7 +1287,7 @@ jobs:
 
       - name: Set Environment Variables
         run: |
-          FULL_VERSION=6.6.127-palaziks-ShiftPorts
+          FULL_VERSION=6.6.138-palaziks-ShiftPorts
           echo "FULL_VERSION=$FULL_VERSION" >> $GITHUB_ENV
           TIME="$(TZ='Asia/Shanghai' date +'%y%m%d%H%M%S')"
           TIME_FORM="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
