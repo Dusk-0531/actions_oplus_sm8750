@@ -24,10 +24,10 @@
 |----------|-------|
 | **Version** | `6.6.138` (upstreamed from 6.6.89) |
 | **Chipset** | `SM8750` \| Snapdragon 8 Elite \| sun |
-| **Kernel Version** | `Linux 6.6` (GKI Android 15) |
+| **Kernel Version** | `Linux 6.6` (OKI Android 15) |
 | **Android Version** | `15 VanillaIceCream` (compatible with later versions) |
 | **ROM Compatibility** | OxygenOS / ColorOS (CN & Global) |
-| **Root Solution** | SukiSU Ultra / KSU Next (Multi-Manager) |
+| **Root Solution** | ReSukiSU / SukiSU Ultra / KSU Next (Multi-Manager) |
 | **Build System** | GitHub Actions CI/CD (optimized for ~5-6min builds) |
 
 ---
