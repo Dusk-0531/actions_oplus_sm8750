@@ -987,7 +987,7 @@ jobs:
         run: |
           cd kernel_workspace
           # ── AnyKernel3 estándar (sin fork personalizado) ──────────────────────
-          git clone https://github.com/osm0sis/AnyKernel3 --depth=1
+          git clone https://github.com/Heisenberg38219/AnyKernel3 --depth=1
           rm -rf ./AnyKernel3/.git
           cd AnyKernel3
           cp /dev/shm/kout/arch/arm64/boot/Image ./Image
