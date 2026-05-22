@@ -1,4 +1,4 @@
-name: ReSukiSU OP13 Build
+name: ReSukiSU OP13 Build Epicmann Kernel
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-heisenberg-pre-official
