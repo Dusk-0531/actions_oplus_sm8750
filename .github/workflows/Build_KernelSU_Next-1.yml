@@ -373,7 +373,8 @@ jobs:
           echo "📝 Copying patch files..."
 
           # Manual hooks - SIEMPRE necesario con KernelSU-Next (legacy-susfs eliminó kprobes)
-          cp kernel_patches/sukisu/scope_min_manual_hooks_v1.9.patch ./common/
+          # El patch está en susfs/, no en sukisu/
+          cp kernel_patches/susfs/scope_min_manual_hooks_v1.9.patch ./common/
 
           if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
             cp susfs4oki/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./common/
@@ -390,6 +391,27 @@ jobs:
 
           echo "📦 Applying manual hooks (required for KernelSU-Next)..."
           patch -p1 < scope_min_manual_hooks_v1.9.patch || true
+
+          # Garantizar que ksu_handle_sys_reboot esté en reboot.c
+          # KernelSU-Next lo verifica explícitamente en el Kbuild
+          if ! grep -q "ksu_handle_sys_reboot" kernel/reboot.c; then
+            echo "⚠️ ksu_handle_sys_reboot no encontrado, inyectando manualmente..."
+            sed -i '/^DEFINE_MUTEX(system_transition_mutex);/a\
+\
+\
+#ifdef CONFIG_KSU_MANUAL_HOOK\
+extern int ksu_handle_sys_reboot(int magic1, int magic2, unsigned int cmd, void __user **arg);\
+#endif' kernel/reboot.c
+            sed -i '/SYSCALL_DEFINE4(reboot,.*magic1.*magic2.*cmd/{n;n;n;n;n;/int ret = 0;/a\
+\
+#ifdef CONFIG_KSU_MANUAL_HOOK\
+\tksu_handle_sys_reboot(magic1, magic2, cmd, \&arg);\
+#endif
+}' kernel/reboot.c || true
+            echo "✅ ksu_handle_sys_reboot inyectado"
+          else
+            echo "✅ ksu_handle_sys_reboot ya presente"
+          fi
 
           if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
             echo "📦 Applying SUSFS patch..."
@@ -419,6 +441,7 @@ jobs:
           echo "CONFIG_LLVM_POLLY=y" >> "$DEFCONFIG"
           echo "CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y" >> "$DEFCONFIG"
           echo "CONFIG_KSU_KPROBES_HOOK=n" >> "$DEFCONFIG"
+          echo "CONFIG_KSU_MANUAL_HOOK=y" >> "$DEFCONFIG"
 
           if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
             echo "📦 Enabling SUSFS features..."
