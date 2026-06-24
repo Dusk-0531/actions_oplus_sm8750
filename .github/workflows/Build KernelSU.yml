@@ -407,10 +407,6 @@ jobs:
             echo "CONFIG_CRYPTO_842=y"   >> "$DEFCONFIG"
           fi
       
-          if [ "${{ github.event.inputs.KPM }}" == "true" ]; then
-            echo "::warning::KPM is SukiSU/APatch-only; not available on stock KSU. Skipping."
-          fi
-      
           # Stock KSU 3.x hooks itself (syscall-table dispatcher + sys_enter
           # tracepoint + LSM). No hook-method config exists or is needed.
       
