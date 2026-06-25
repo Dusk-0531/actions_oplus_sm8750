@@ -1,4 +1,3 @@
-```yaml
 name: Generic OP13 Build
 
 concurrency:
