@@ -208,15 +208,18 @@ jobs:
       - name: ⚡ Add Swap (Full LTO only)
         if: inputs.lto_type == 'full'
         run: |
-          echo "Full LTO detected — adding 16GB swap to prevent OOM..."
-          sudo fallocate -l 16G /swapfile
+          echo "Full LTO detected — adding swap to prevent OOM..."
+          # 先检查磁盘空间
+          df -h /
+          # 用 dd 创建 8GB swap（比 fallocate 兼容性更好）
+          sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 status=progress
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
-          sudo swapon /swapfile
-          echo "Swap added successfully:"
+          sudo swapon /swapfile || echo "⚠️ swapon failed, continuing anyway"
+          # 设置 swappiness
+          sudo sysctl vm.swappiness=10 || true
+          echo "Swap setup complete:"
           free -h
-          echo "vm.swappiness = 10" | sudo tee -a /etc/sysctl.conf
-          sudo sysctl -p
 
       - name: Cache ccache-ECS binary
         uses: actions/cache@v4
@@ -303,6 +306,10 @@ jobs:
           export CCACHE_DIR="${{ env.CCACHE_DIR }}"
           mkdir -p "$CCACHE_DIR"
           ccache -M "${{ env.CCACHE_MAXSIZE }}"
+          # Full LTO 扩容ccache缓存
+          if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+            ccache -M 15G
+          fi
           ccache -o compression=true
           ccache -o compiler_check=none
           ccache -o hash_dir=false
@@ -758,7 +765,7 @@ jobs:
 
           # Set parallel jobs based on LTO type (Full LTO uses fewer jobs to save RAM)
           if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
-            BUILD_JOBS=2
+            BUILD_JOBS=1
             echo "Full LTO mode — using -j2 to prevent OOM"
           else
             BUILD_JOBS=$(nproc --all)
@@ -768,7 +775,11 @@ jobs:
           cd kernel_workspace/common
           # LTO thin cache wrapper pointing to RAM disk
           echo '#!/bin/bash' > ld-wrapper
-          echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.139 --thinlto-jobs=$(($(nproc --all) / 2))' >> ld-wrapper
+          if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+            echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.139 --thinlto-jobs=1 --lto-O1' >> ld-wrapper
+          else
+            echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.139 --thinlto-jobs=$(($(nproc --all) / 2))' >> ld-wrapper
+          fi
           chmod +x ld-wrapper
           wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/lib/libfakestat.so || true
           wget https://github.com/$GITHUB_REPOSITORY/raw/refs/heads/$GITHUB_REF_NAME/lib/libfaketimeMT.so || true
