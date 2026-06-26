@@ -206,17 +206,27 @@ jobs:
           done
           echo "Source and tools initialized successfully!"
       - name: ⚡ Add Swap (Full LTO only)
-        if: inputs.lto_type == 'full'
+        if: ${{ inputs.lto_type == 'full' }}
+        continue-on-error: true
         run: |
           echo "Full LTO detected — adding swap to prevent OOM..."
-          # 先检查磁盘空间
-          df -h /
-          # 用 dd 创建 8GB swap（比 fallocate 兼容性更好）
-          sudo dd if=/dev/zero of=/swapfile bs=1M count=8192 status=progress
+          # 清理已有 swap
+          sudo swapoff -a 2>/dev/null || true
+          sudo rm -f /swapfile 2>/dev/null || true
+          # 检查可用空间，动态调整 swap 大小
+          AVAILABLE=$(df -BM / | awk 'NR==2{print $4}' | tr -d 'M')
+          echo "Available space: ${AVAILABLE}MB"
+          if [ "$AVAILABLE" -lt 9216 ]; then
+            echo "⚠️ Not enough space for 8GB swap, trying 4GB..."
+            SWAP_SIZE=4096
+          else
+            SWAP_SIZE=8192
+          fi
+          # 创建 swap（去掉 status=progress 避免 Actions 日志问题）
+          sudo dd if=/dev/zero of=/swapfile bs=1M count=$SWAP_SIZE status=none
           sudo chmod 600 /swapfile
           sudo mkswap /swapfile
           sudo swapon /swapfile || echo "⚠️ swapon failed, continuing anyway"
-          # 设置 swappiness
           sudo sysctl vm.swappiness=10 || true
           echo "Swap setup complete:"
           free -h
@@ -307,7 +317,7 @@ jobs:
           mkdir -p "$CCACHE_DIR"
           ccache -M "${{ env.CCACHE_MAXSIZE }}"
           # Full LTO 扩容ccache缓存
-          if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+          if [[ "${{ inputs.lto_type }}" == "full" ]]; then
             ccache -M 15G
           fi
           ccache -o compression=true
@@ -715,9 +725,9 @@ jobs:
       - name: Configure LTO
         run: |
           cd kernel_workspace
-          if [[ "${{ github.event.inputs.lto_type }}" == "none" ]]; then
+          if [[ "${{ inputs.lto_type }}" == "none" ]]; then
             echo "CONFIG_LTO_CLANG_NONE=y" >> ./common/arch/arm64/configs/gki_defconfig
-          elif [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+          elif [[ "${{ inputs.lto_type }}" == "full" ]]; then
             echo "CONFIG_LTO_CLANG_FULL=y" >> ./common/arch/arm64/configs/gki_defconfig
           else
             echo "CONFIG_LTO_CLANG_THIN=y" >> ./common/arch/arm64/configs/gki_defconfig
@@ -764,7 +774,7 @@ jobs:
           mkdir -p /dev/shm/ldcache_6.6.139
 
           # Set parallel jobs based on LTO type (Full LTO uses fewer jobs to save RAM)
-          if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+          if [[ "${{ inputs.lto_type }}" == "full" ]]; then
             BUILD_JOBS=1
             echo "Full LTO mode — using -j2 to prevent OOM"
           else
@@ -775,7 +785,7 @@ jobs:
           cd kernel_workspace/common
           # LTO thin cache wrapper pointing to RAM disk
           echo '#!/bin/bash' > ld-wrapper
-          if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+          if [[ "${{ inputs.lto_type }}" == "full" ]]; then
             echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.139 --thinlto-jobs=1 --lto-O1' >> ld-wrapper
           else
             echo 'ld.lld "$@" --thinlto-cache-dir=/dev/shm/ldcache_6.6.139 --thinlto-jobs=$(($(nproc --all) / 2))' >> ld-wrapper
@@ -895,7 +905,7 @@ jobs:
           TIME_NOW="$(TZ='Asia/Shanghai' date +'%Y-%m-%d %H:%M:%S')"
           export TG_KERNEL_VERSION="6.6.139"
           export TG_SUFFIX="palaziks-ShiftPorts"
-          export TG_LTO="${{ github.event.inputs.lto_type }}"
+          export TG_LTO="${{ inputs.lto_type }}"
           export TG_BUILD_NUM="${{ github.run_number }}"
           export TG_TIME_NOW="$TIME_NOW"
           export TG_RUN_URL="$RUN_URL"
