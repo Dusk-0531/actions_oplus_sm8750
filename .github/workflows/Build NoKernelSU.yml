@@ -205,6 +205,19 @@ jobs:
             sed -i '$i res=$(echo "$res" | sed '\''s/-dirty//g'\'')' "$f"
           done
           echo "Source and tools initialized successfully!"
+      - name: ⚡ Add Swap (Full LTO only)
+        if: inputs.lto_type == 'full'
+        run: |
+          echo "Full LTO detected — adding 16GB swap to prevent OOM..."
+          sudo fallocate -l 16G /swapfile
+          sudo chmod 600 /swapfile
+          sudo mkswap /swapfile
+          sudo swapon /swapfile
+          echo "Swap added successfully:"
+          free -h
+          echo "vm.swappiness = 10" | sudo tee -a /etc/sysctl.conf
+          sudo sysctl -p
+
       - name: Cache ccache-ECS binary
         uses: actions/cache@v4
         id: ecs-cache
@@ -742,6 +755,16 @@ jobs:
           # RAM disk for build output (15GB RAM available, safe to use)
           mkdir -p /dev/shm/kout
           mkdir -p /dev/shm/ldcache_6.6.139
+
+          # Set parallel jobs based on LTO type (Full LTO uses fewer jobs to save RAM)
+          if [[ "${{ github.event.inputs.lto_type }}" == "full" ]]; then
+            BUILD_JOBS=2
+            echo "Full LTO mode — using -j2 to prevent OOM"
+          else
+            BUILD_JOBS=$(nproc --all)
+            echo "Thin/None LTO mode — using -j$BUILD_JOBS"
+          fi
+
           cd kernel_workspace/common
           # LTO thin cache wrapper pointing to RAM disk
           echo '#!/bin/bash' > ld-wrapper
@@ -755,13 +778,13 @@ jobs:
           export FAKETIME="@2025-05-25 13:00:00"
           export PRELOAD_LIBS="$SO_DIR/libfakestat.so $SO_DIR/libfaketimeMT.so"
           # defconfig pass — output to RAM disk
-          make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+          make -j$BUILD_JOBS LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
             CC="ccache clang" LD="$(pwd)/ld-wrapper" HOSTLD="$(pwd)/ld-wrapper" \
             O=/dev/shm/kout \
             KCFLAGS="-O2 -pipe -Wno-error -Wno-implicit-function-declaration -Wno-implicit-int -Wno-default-const-init-var-unsafe -Wno-format -Wno-unknown-warning-option" \
             gki_defconfig
           # Image build — output to RAM disk
-          make -j$(nproc --all) LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
+          make -j$BUILD_JOBS LLVM=1 LLVM_IAS=1 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- \
             CC="ccache clang" LD="$(pwd)/ld-wrapper" HOSTLD="$(pwd)/ld-wrapper" \
             O=/dev/shm/kout \
             KCFLAGS="-O2 -pipe -Wno-error -Wno-implicit-function-declaration -Wno-implicit-int -Wno-default-const-init-var-unsafe -Wno-format -Wno-unknown-warning-option ${EXTRA_CFLAGS:-} ${MAP}" \
