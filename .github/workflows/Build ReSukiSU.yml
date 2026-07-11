@@ -428,6 +428,8 @@ jobs:
           if [ "${{ github.event.inputs.KPM }}" == "true" ]; then
             echo "📦 Enabling KPM..."
             echo "CONFIG_KPM=y" >> "$DEFCONFIG"
+            echo "CONFIG_KALLSYMS=y" >> "$DEFCONFIG"
+            echo "CONFIG_KALLSYMS_ALL=y" >> "$DEFCONFIG"
           fi
       
           echo "CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y" >> "$DEFCONFIG"
