@@ -50,7 +50,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: kernel_workspace/build-tools
-          key: codelinaro-build-tools-ks-kernel-lnx-4.0
+          key: aosp-kernel-build-tools-main-v1
 
       - name: Cache Rust toolchain
         id: rust-cache
@@ -99,13 +99,14 @@ jobs:
             echo "Clang restored from cache, skipping download."
           fi &
 
-          # build-tools — only clone if cache missed
           if [ "${{ steps.buildtools-cache.outputs.cache-hit }}" != "true" ]; then
-            echo "Cache miss — cloning build-tools..."
-            git clone --depth=1 -b ks-kernel.lnx.4.0.r1-rel \
-              https://git.codelinaro.org/clo/la/kernel/prebuilts/build-tools.git build-tools
+            echo "Downloading AOSP kernel build-tools (recent pahole)..."
+            mkdir -p build-tools/linux-x86
+            curl -L --retry 3 \
+              "https://android.googlesource.com/kernel/prebuilts/build-tools/+archive/refs/heads/main/linux-x86.tar.gz" \
+              | tar -xz -C build-tools/linux-x86
           else
-            echo "build-tools restored from cache, skipping clone."
+            echo "build-tools restored from cache."
           fi &
 
           wait
@@ -345,6 +346,7 @@ jobs:
           export PATH="$WORKDIR/kernel_workspace/zyc-clang/bin:$WORKDIR/kernel_workspace/build-tools/linux-x86/bin:$PATH"
           export PATH="$HOME/.cargo/bin:$PATH"
           export LIBCLANG_PATH="${LIBCLANG_PATH:-$WORKDIR/kernel_workspace/zyc-clang/lib}"
+	  export PAHOLE="$WORKDIR/kernel_workspace/build-tools/linux-x86/bin/pahole"
           CLANG_DIR="$WORKDIR/kernel_workspace/zyc-clang/bin"
           echo "Clang: $($CLANG_DIR/clang --version | head -n 1)"
           echo "LLD:   $($CLANG_DIR/ld.lld --version | head -n 1)"
