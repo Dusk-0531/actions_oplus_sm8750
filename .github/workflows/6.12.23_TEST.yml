@@ -341,7 +341,7 @@ jobs:
       - name: Configure LTO
         run: |
           cd kernel_workspace
-          echo "CONFIG_LTO_CLANG_THIN=y" >> ./common
+          echo "CONFIG_LTO_CLANG_THIN=y" >> ./common/arch/arm64/configs/gki_defconfig
 
       - name: Configure Baseband Guard
         run: |
