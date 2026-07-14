@@ -1,4 +1,4 @@
-name: 6.12 TEST OP13 Build
+name: 6.12.23 TEST OP13 Build
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}-6.12.23
@@ -273,26 +273,6 @@ jobs:
           cd ./common
 
           if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
-            echo "📦 Pre-patch fixups (fatalcoder android15-6.6 method)..."
-            # nr_subpages
-            if ! grep -qxF $'\tunsigned int nr_subpages = __PAGE_SIZE / PAGE_SIZE;' ./fs/proc/task_mmu.c; then
-              sed -i -e '/int ret = 0, copied = 0;/a \\tunsigned int nr_subpages \= __PAGE_SIZE \/ PAGE_SIZE;' \
-                     -e '/int ret = 0, copied = 0;/a \\tpagemap_entry_t \*res = NULL;' ./fs/proc/task_mmu.c
-            fi
-            # base.c dma-buf
-            if ! grep -qxF '#include <linux/dma-buf.h>' ./fs/proc/base.c; then
-              sed -i '/#include <linux\/cpufreq_times.h>/a #include <linux\/dma-buf.h>' ./fs/proc/base.c
-            fi
-            # memory.c zswap
-            if ! grep -qxF '#include <linux/zswap.h>' ./mm/memory.c; then
-              sed -i '/#include <linux\/sched\/sysctl\.h>/a #include <linux\/zswap.h>' ./mm/memory.c
-            fi
-            # task_mmu last_vma_end: expand ONLY if unbraced (your tree is already braced → skipped)
-            if grep -qF 'if (vma->vm_end > last_vma_end)' ./fs/proc/task_mmu.c \
-               && ! grep -qF 'if (vma->vm_end > last_vma_end) {' ./fs/proc/task_mmu.c; then
-              perl -i -0pe 's/\t\t\tif \(vma->vm_end > last_vma_end\)\n\t\t\t\tsmap_gather_stats\(vma, &mss, last_vma_end\);/\t\t\tif (vma->vm_end > last_vma_end) {\n\t\t\t\tsmap_gather_stats(vma, \&mss, last_vma_end);\n\t\t\t\tlast_vma_end = vma->vm_end;\n\t\t\t}/' ./fs/proc/task_mmu.c
-            fi
-
             echo "📦 Applying 50_ with --forward (by-design rejects skip cleanly)..."
             patch -p1 --forward < 50_add_susfs_in_gki-android16-6.12.patch || true
 
