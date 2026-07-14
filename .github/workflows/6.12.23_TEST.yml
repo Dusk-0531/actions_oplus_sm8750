@@ -270,7 +270,7 @@ jobs:
             fi
 
             echo "📦 Applying 50_ with --forward (by-design rejects skip cleanly)..."
-            patch -p1 --forward < 50_add_susfs_in_gki-android15-6.6.patch || true
+            patch -p1 --forward < 50_add_susfs_in_gki-android16-6.12.patch || true
 
             # Verify the SUS_MAP guard actually landed (real correctness check, not error-ignoring)
             grep -q "SUSFS_IS_INODE_SUS_MAP(file_inode(vma->vm_file))" fs/proc/task_mmu.c \
