@@ -14,11 +14,6 @@ env:
 on:
   workflow_dispatch:
     inputs:
-      SUSFS:
-        description: 'Enable SuSFS (Enhances hide environment)'
-        required: true
-        type: boolean
-        default: true
       lz4_enable:
         description: 'Install LZ4 1.10.0 + ZSTD 1.5.7 Patch'
         required: true
@@ -147,7 +142,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      ksuver: ${{ steps.ksu_version.outputs.ksuver }}
       ak3name: ${{ steps.create_zip.outputs.ak3name }}
     permissions:
       actions: write
@@ -341,21 +335,13 @@ jobs:
               
       - name: ⚡ Setup KernelSU-Next
         run: |
-          cd kernel_workspace/common
-          echo "🛠️ Setting up KernelSU-Next (dev branch)..."
-          curl -LSs "https://raw.githubusercontent.com/KernelSU-Next/KernelSU-Next/next/kernel/setup.sh" | bash -s dev
-          cd KernelSU-Next
-          KSU_GIT_VERSION=$(git rev-list --count HEAD)
-          export KSUVER=$(expr 10000 + $KSU_GIT_VERSION + 200)
-          echo "KSUVER=$KSUVER" >> $GITHUB_ENV
-          echo "✅ KernelSU-Next $(git describe --tags 2>/dev/null || git rev-parse --short HEAD)  (ver $KSUVER)"
-
+          echo "Kernel manager setup removed"
       - name: 🔧 Setup Patches
         run: |
           cd kernel_workspace
       
           echo "⬇️ Cloning patch repos..."
-          if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
+          if [ "false" == "true" ]; then
             git clone --depth=1 https://gitlab.com/simonpunk/susfs4ksu.git -b gki-android15-6.6 &
             git clone --depth=1 https://github.com/WildKernels/kernel_patches.git wild_susfs_fix &
           fi
@@ -364,7 +350,7 @@ jobs:
           git clone --depth=1 https://github.com/TheWildJames/kernel_patches.git wildkernels_patches &
           wait
       
-          if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
+          if [ "false" == "true" ]; then
             echo "📝 Staging SUSFS files..."
             # kernel-side patch + source files → common/
             cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./common/
@@ -379,7 +365,7 @@ jobs:
           echo "📦 Enabling POLLY support..."
           git apply -p1 < EnablePOLLY.patch || true
       
-          if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
+          if [ "false" == "true" ]; then
             FIX_DIR="../wild_susfs_fix/next/susfs_fix_patches/v2.2.0"
       
             echo "📦 [1/3] Applying 10_enable_susfs_for_ksu (KSU upstream parts; KSUN-specific errors are EXPECTED)..."
@@ -415,7 +401,6 @@ jobs:
           DEFCONFIG="./common/arch/arm64/configs/gki_defconfig"
       
           # ── Core KernelSU-Next (dev) ──
-          echo "CONFIG_KSU=y"            >> "$DEFCONFIG"
           echo "CONFIG_EXT4_FS=y"        >> "$DEFCONFIG"   # KSU depends on EXT4_FS
           # Inline/manual hooks are supplied by the SUSFS fs/*.c patch +
           # WildKernels overwrite_hook_mode.patch — no Kconfig toggle needed.
@@ -438,19 +423,8 @@ jobs:
           echo "CONFIG_LLVM_POLLY=y"                    >> "$DEFCONFIG"
           echo "CONFIG_LD_DEAD_CODE_DATA_ELIMINATION=y" >> "$DEFCONFIG"
       
-          if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
+          if [ "false" == "true" ]; then
             echo "📦 Enabling SUSFS features..."
-            echo "CONFIG_KSU_SUSFS=y"                          >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_SUS_PATH=y"                 >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_SUS_MOUNT=y"                >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_SUS_KSTAT=y"                >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_SUS_MAP=y"                  >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_TRY_UMOUNT=y"               >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_SPOOF_UNAME=y"              >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_ENABLE_LOG=y"               >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_HIDE_KSU_SUSFS_SYMBOLS=y"   >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG=y" >> "$DEFCONFIG"
-            echo "CONFIG_KSU_SUSFS_OPEN_REDIRECT=y"            >> "$DEFCONFIG"
           fi
 
       - name: Apply LZ4 1.10.0 & ZSTD 1.5.7 Patches
@@ -997,7 +971,7 @@ jobs:
           echo "Kernel Ver: $FULL_VERSION" >> ./ak3.log
           echo "KSU Branch: ${KSU_TYPENAME}" >> ./ak3.log
           echo "KSU Ver: ${KSUVER}" >> ./ak3.log
-          echo "SuSFS: ${{ github.event.inputs.SUSFS }}" >> ./ak3.log
+          echo "SuSFS: false" >> ./ak3.log
           echo "LZ4: ${{ github.event.inputs.lz4_enable }}" >> ./ak3.log
           echo "LZ4KD: ${{ github.event.inputs.lz4kd_enable }}" >> ./ak3.log
           echo "BBR&Brutal: ${{ github.event.inputs.bbr_enable }}" >> ./ak3.log
@@ -1061,7 +1035,7 @@ jobs:
           export TG_TIME_NOW="$TIME_NOW"
           export TG_RUN_URL="$RUN_URL"
           export TG_REPO="${{ github.repository }}"
-          export TG_SUSFS="${{ github.event.inputs.SUSFS }}"
+          export TG_SUSFS="false"
           export TG_BBR="${{ github.event.inputs.bbr_enable }}"
           export TG_BBR3="true"
           export TG_ADIOS="${{ github.event.inputs.adios_enable }}"
@@ -1272,7 +1246,7 @@ jobs:
           - **Kernel Version:** ${{ env.FULL_VERSION }}
           - **Build Time:** ${{ env.TIME_FORM }}
           - **KSU Branch:** KernelSU Next
-          - **SuSFS:** ${{ github.event.inputs.SUSFS }}
+          - **SuSFS:** false
           - **NTSync:** ${{ github.event.inputs.ntsync_enable }}
           - **Droidspaces:** ${{ github.event.inputs.droidspaces_enable }}
           - **IP_SET + IPv6 NAT:** ${{ github.event.inputs.ip_set_enable }}
