@@ -7,13 +7,10 @@ on:
         type: choice
         description: 'Name of the workflow to be cleaned'
         required: true
-        default: 'Build Kernel Only'
+        default: 'Clean Caches'
         options:
-          - Build SukiSU Ultra
-          - Build KernelSU Next
-          - Build Kernel Only
-          - Build Official KernelSU
-          - Build ReSukiSU
+          - Clean Caches
+          - Clean Workflows
       count:
         description: 'Maximum number of runs to clean'
         required: false
@@ -124,7 +121,7 @@ jobs:
           done
 
           echo "清理本工作流运行记录..."
-          SELF_WORKFLOW_ID=$(gh api repos/$REPO/actions/workflows | jq -r '.workflows[] | select(.name == "清理工作流运行记录") | .id')
+          SELF_WORKFLOW_ID=$(gh api repos/$REPO/actions/workflows | jq -r '.workflows[] | select(.name == "Clean Workflows") | .id')
           if [ -n "$SELF_WORKFLOW_ID" ]; then
             SELF_RUNS=$(gh api "repos/$REPO/actions/workflows/$SELF_WORKFLOW_ID/runs?per_page=50" | jq -c '.workflow_runs[]')
 
