@@ -6,7 +6,7 @@
         <small>Stability-focused OGKI (aka OKI) 6.6 kernel for OnePlus 13 (SM8750)</small>
       </p>
       <p align="center" style="font-size:12px; margin-top: 0; margin-bottom: 20px;">
-        <i>SukiSU Ultra &amp; ReSukiSU &amp; KernelSU &amp; KernelSU Next</i>
+        <i>Vanilla OnePlus SM8750 kernel builds for ColorOS/OxygenOS and AOSP</i>
       </p>
     </summary>
   </ul>
@@ -29,7 +29,7 @@
 | **Chipset** | `SM8750` \| Snapdragon 8 Elite \| sun |
 | **Android Version** | `15 VanillaIceCream` (compatible with later versions) |
 | **ROM Compatibility** | OxygenOS / ColorOS **or** AOSP — one build per ROM type ([see below](#-rom-compatibility)) |
-| **Root Solution** | SukiSU Ultra / KSU Next / KSU / ReSukiSU |
+| **Root Solution** | None (vanilla kernel) |
 | **Build System** | GitHub Actions CI/CD (optimized for ~5-6min builds) |
 
 ---
@@ -41,15 +41,15 @@
 
 | Your ROM | Workflow to run | Toolchain |
 |----------|-----------------|-----------|
-| **ColorOS / OxygenOS** | `Build <manager>.yml` (normal) | ZyCromerZ Clang |
-| **AOSP-based** (LineageOS, crDroid, etc.) | `Build <manager> AOSP.yml` | AOSP Clang |
+| **ColorOS / OxygenOS** | `6.12.23 TEST OP13 Build` | ZyCromerZ Clang |
+| **AOSP-based** (LineageOS, crDroid, etc.) | `6.12.23 TEST AOSP OP13 Build` | AOSP Clang |
 
 - **ZyCromerZ Clang builds → ColorOS / OxygenOS only.**
 - **AOSP Clang builds → AOSP ROMs only.**
 - Flashing the wrong variant on your ROM will not boot.
 
 > [!NOTE]
-> **GitHub Releases only ship the ColorOS / OxygenOS (normal) builds.** If you're on an AOSP ROM, there is no prebuilt release — fork the repo and run the matching **`Build <manager> AOSP`** workflow yourself under **Actions**, then grab the ZIP from the artifacts (or your Telegram bot).
+> **GitHub Releases only ship the ColorOS / OxygenOS (normal) builds.** If you're on an AOSP ROM, there is no prebuilt release — fork the repo and run the matching **`6.12.23 TEST AOSP OP13 Build`** workflow yourself under **Actions**, then grab the ZIP from the artifacts (or your Telegram bot).
 
 ---
 
@@ -59,7 +59,6 @@
 - ✅ **Upstream** – Upstreaming the OnePlus's official kernel to the Google's newest A15 6.6 kernel
 
 ### 🔐 Security & Hide
-- ✅ **SuSFS** – Enhanced environment hiding (path/mount/kstat spoofing)
 - ✅ **Baseband Guard** – Anti-brick modem protection
 - ✅ **Unicode Bypass Fix** – Path traversal protection *(always on)*
 
@@ -92,10 +91,6 @@
 ### 🔋 Battery & Power
 - ✅ **Wakelock Blocker** – Reduce idle battery drain
 - ✅ **Re-Kernel Support** – Enhanced app freezing via NoActive/Freezer *(optional)*
-
-### 🧩 KernelSU Enhancements
-- ✅ **KPM Support** – Kernel Patch Module for SukiSU Ultra *(optional)*
-- ✅ **Multi-Manager** – Compatible with multiple KSU variants
 
 ---
 
@@ -157,18 +152,12 @@
 ### Quick Start
 1. **Fork** this repository (ensure all branches are copied)
 2. Go to **Actions** → Enable workflows
-3. Pick the workflow for your **root manager _and_ ROM**:
-   - ColorOS / OxygenOS → **`Build <manager>`** (e.g. *"SukiSU Ultra OP13 Build"*)
-   - AOSP-based ROMs → **`Build <manager> AOSP`**
+3. Pick the workflow for your ROM:
+   - ColorOS / OxygenOS → **`6.12.23 TEST OP13 Build`**
+   - AOSP-based ROMs → **`6.12.23 TEST AOSP OP13 Build`**
    - Then hit **"Run workflow"** ([why two variants?](#-rom-compatibility))
-4. Configure options:
-   - ✅ SuSFS (recommended for hiding)
-   - ✅ Fengchi (performance scheduler)
-   - ✅ Memory Opt Patches (25 optimizations)
-   - 🔘 LTO Type: `thin` (balanced) / `none` (fastest compile) / `full` (max optimization)
-   - 🔘 Optional features: KPM, LZ4KD, NTSync, IPv6 NAT, etc.
-5. Click **"Run workflow"** → Wait ~5-6 minutes
-6. Download `AnyKernel3_*.zip` from artifacts or Telegram (if you configured TG bot)
+4. Click **"Run workflow"** → Wait for compilation
+5. Download `AnyKernel3_*.zip` from artifacts
 
 ### Workflow Optimizations
 This CI pipeline includes:
@@ -210,14 +199,10 @@ This CI pipeline includes:
 
 1. Download the latest `AnyKernel3_*.zip`:
    - **ColorOS / OxygenOS** → [Releases](../../releases) or Actions artifacts
-   - **AOSP** → Actions artifacts of your own **`Build <manager> AOSP`** run (Releases are COS/OOS only — see [ROM Compatibility](#-rom-compatibility))
+   - **AOSP** → Actions artifacts of your own **`6.12.23 TEST AOSP OP13 Build`** run (Releases are COS/OOS only — see [ROM Compatibility](#-rom-compatibility))
 2. Boot to custom recovery (TWRP / OrangeFox / KernelFlasher)
 3. Flash the AnyKernel3 ZIP
-4. **(Required)** Install a metamodule for KSU:
-   - [mountify](https://github.com/SukiSU-Ultra/mountify)
-   - [meta-overlayfs](https://github.com/SukiSU-Ultra/meta-overlayfs)
-   - [meta-magicmount](https://github.com/SukiSU-Ultra/meta-magicmount)
-5. Reboot and enjoy! 🎉
+4. Reboot and enjoy! 🎉
 
 > ⚠️ **Disclaimer**: I am not responsible for bricked devices, data loss, or other issues. Flash at your own risk.
 
@@ -229,8 +214,8 @@ This CI pipeline includes:
 |-------------|-------------|
 | [mrcxlinux](https://github.com/mrcxlinux) | The base workflow
 | [xiaomichael](https://github.com/xiaomichael) | Some help & GKI infrastructure |
-| [cctv18](https://github.com/cctv18) | SuSFS, ccache-ECS, Baseband Guard, public ccache |
-| [vc-teahouse](https://github.com/vc-teahouse) | SukiSU Ultra core & KPM framework |
+| [cctv18](https://github.com/cctv18) | ccache-ECS, Baseband Guard, public ccache |
+
 | [Numbersf](https://github.com/Numbersf) | Fengchi / HMBIRD scheduler patches |
 | [WildKernels](https://github.com/WildKernels) | 25 memory/scheduler optimization patches, BBRv3 backport patch & workflow optimization |
 | [ShirkNeko](https://github.com/ShirkNeko) | LZ4KD & ZRAM patches |
