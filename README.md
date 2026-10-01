@@ -25,7 +25,7 @@
 
 | Property | Value |
 |----------|-------|
-| **Kernel Version** | `6.6.143` (upstreamed from OGKI 6.6.89) |
+| **Kernel Version** | `6.6.143` (upstreamed from [OnePlusOSS sm8750_b_16.0.0_oneplus_13](https://github.com/OnePlusOSS/android_kernel_common_oneplus_sm8750/commits/oneplus/sm8750_b_16.0.0_oneplus_13/)) |
 | **Chipset** | `SM8750` \| Snapdragon 8 Elite \| sun |
 | **Android Version** | `15 VanillaIceCream` (compatible with later versions) |
 | **ROM Compatibility** | OxygenOS / ColorOS **or** AOSP — one build per ROM type ([see below](#-rom-compatibility)) |
