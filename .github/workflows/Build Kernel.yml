@@ -324,7 +324,7 @@ jobs:
         run: |
           cd kernel_workspace/common
           echo "🛠️ Setting up ReSukiSU (main)..."
-          curl -LSs "https://raw.githubusercontent.com/ReSukiSU/ReSukiSU/main/kernel/setup.sh" | bash -s main
+          curl -LSs "https://raw.githubusercontent.com/Baka-SU/BakaSU/main/kernel/setup.sh" | bash -s main
           cd KernelSU
           KSUVER=$(python3 - <<'PY'
           import json
