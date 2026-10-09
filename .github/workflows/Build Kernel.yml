@@ -408,7 +408,7 @@ jobs:
       - name: 🔧 Setup Patches
         run: |
           cd kernel_workspace
-          if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
+          if [ "${{ github.event.inputs.SUSFS }}" == "true" ] && [ "${{ inputs.ksu_type }}" != "No Root" ]; then
             git clone --depth=1 -b gki-android15-6.6 https://gitlab.com/simonpunk/susfs4ksu.git &
           fi
           git clone --depth=1 https://github.com/mrcxlinux/kernel_patches.git &
@@ -416,7 +416,7 @@ jobs:
           git clone --depth=1 https://github.com/palazik/kernel_patches.git wildkernels_patches &
           wait
 
-          if [ "${{ github.event.inputs.SUSFS }}" == "true" ]; then
+          if [ "${{ github.event.inputs.SUSFS }}" == "true" ] && [ "${{ inputs.ksu_type }}" != "No Root" ]; then
             cp susfs4ksu/kernel_patches/50_add_susfs_in_gki-android15-6.6.patch ./common/
             cp susfs4ksu/kernel_patches/fs/* ./common/fs/
             cp susfs4ksu/kernel_patches/include/linux/* ./common/include/linux/
